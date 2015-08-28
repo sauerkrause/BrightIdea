@@ -17,6 +17,7 @@ import android.util.Log;
  */
 public class LightMonitorService extends Service implements SharedPreferences.OnSharedPreferenceChangeListener {
     private static final String TAG = "LightMonitorService";
+    private static final boolean DEBUG = false;
     private SensorManager mSensors = null;
     private Sensor mLight = null;
     private PowerManager mPower = null;
@@ -62,7 +63,6 @@ public class LightMonitorService extends Service implements SharedPreferences.On
         if(mLight == null)
             mLight = mSensors.getDefaultSensor(Sensor.TYPE_LIGHT);
         mSensors.registerListener(mSensorListener, mLight, SensorManager.SENSOR_DELAY_NORMAL);
-        mWakeLock = mPower.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, "wakeywakey");
     }
 
     private synchronized float getThreshold() {
@@ -75,9 +75,14 @@ public class LightMonitorService extends Service implements SharedPreferences.On
         mThreshold = mPreferences.getFloat(THRESHOLD_KEY, DEFAULT_THRESHOLD);
     }
 
-    private void handleLightLevel(float level) {
+    private synchronized void handleLightLevel(float level) {
         float threshold = getThreshold();
-        Log.d(TAG, String.format("Light level: %f", level));
+        if(DEBUG)
+            Log.d(TAG, String.format("Light level: %f", level));
+        if(mWakeLock == null) {
+            mWakeLock = mPower.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, "wakeywakey");
+        }
+
         if(level > threshold) {
             if(!mWakeLock.isHeld()) {
                 mWakeLock.acquire();
@@ -86,6 +91,7 @@ public class LightMonitorService extends Service implements SharedPreferences.On
         } else {
             if(mWakeLock.isHeld()) {
                 mWakeLock.release();
+                mWakeLock = null;
                 Log.d(TAG, String.format("Lock released. %f <= %f", level, threshold));
             }
         }

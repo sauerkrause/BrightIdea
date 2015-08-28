@@ -1,19 +1,40 @@
 package us.sauerkrause.lolightlocker;
 
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends ActionBarActivity implements SensorEventListener {
+    private TextView mLightValue = null;
+    private SensorManager mSensorManager = null;
+    private Sensor mLightSensor;
+    
+    private void handleLightLevel(float level) {
+        if(mLightValue != null) {
+            mLightValue.setText(Float.toString(level));
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        mLightValue = (TextView)findViewById(R.id.light_value);
+        mSensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
+        mLightSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
+        if(mSensorManager != null && mLightSensor != null) {
+            mSensorManager.registerListener(this, mLightSensor, SensorManager.SENSOR_DELAY_NORMAL);
+        }
     }
 
     @Override
@@ -22,7 +43,6 @@ public class MainActivity extends ActionBarActivity {
         Intent service = new Intent();
         service.setComponent(new ComponentName(this, LightMonitorService.class));
         startService(service);
-        finish();
     }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -44,5 +64,25 @@ public class MainActivity extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onDestroy() {
+        if(mSensorManager != null) {
+            mSensorManager.unregisterListener(this);
+        }
+        if(mLightSensor != null) {
+            mLightSensor = null;
+        }
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        handleLightLevel(event.values[0]);
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
     }
 }
