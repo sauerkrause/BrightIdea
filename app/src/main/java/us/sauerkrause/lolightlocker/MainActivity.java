@@ -22,6 +22,7 @@ public class MainActivity extends ActionBarActivity {
         Intent service = new Intent();
         service.setComponent(new ComponentName(this, LightMonitorService.class));
         startService(service);
+        finish();
     }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
