@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name">Light Based Lock</string>
-
-    <string name="hello_world">Hello world!</string>
+    <string name="light_level">Light Level: </string>
     <string name="action_settings">Settings</string>
 </resources>

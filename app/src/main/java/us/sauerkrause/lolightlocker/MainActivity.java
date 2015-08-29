@@ -60,6 +60,9 @@ public class MainActivity extends ActionBarActivity implements SensorEventListen
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            Intent intent = new Intent();
+            intent.setComponent(new ComponentName(this, SettingsActivity.class));
+            startActivity(intent);
             return true;
         }
 

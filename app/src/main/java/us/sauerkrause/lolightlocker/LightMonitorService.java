@@ -10,6 +10,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 /**
@@ -50,8 +51,7 @@ public class LightMonitorService extends Service implements SharedPreferences.On
         if(mSensors == null) {
             mSensors = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
         }
-
-        mPreferences = getSharedPreferences("config", Context.MODE_MULTI_PROCESS);
+        mPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         mPreferences.registerOnSharedPreferenceChangeListener(this);
         if(mPower != null && mSensors != null) {
             handlePowerManagerAcquired();
@@ -72,7 +72,12 @@ public class LightMonitorService extends Service implements SharedPreferences.On
     }
 
     private synchronized void refreshThreshold() {
-        mThreshold = mPreferences.getFloat(THRESHOLD_KEY, DEFAULT_THRESHOLD);
+        String strThreshold = mPreferences.getString(THRESHOLD_KEY, null);
+        if(strThreshold != null) {
+            mThreshold = Float.parseFloat(strThreshold);
+        } else {
+            mThreshold = DEFAULT_THRESHOLD;
+        }
     }
 
     private synchronized void handleLightLevel(float level) {
