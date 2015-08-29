@@ -71,6 +71,7 @@ public class MainActivity extends ActionBarActivity implements SensorEventListen
 
     @Override
     public void onDestroy() {
+        super.onDestroy();
         if(mSensorManager != null) {
             mSensorManager.unregisterListener(this);
         }
